@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حياتي - Life Management Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-shell">
+
+        <!-- ===== Header ===== -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-icon">🎯</div>
+                <div class="brand-text">
+                    <h1>حياتي</h1>
+                    <p>Life Management Hub</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button class="btn btn-ghost" onclick="openAddTaskModal()">+ مهمة سريعة</button>
+                <div class="user-wrap">
+                    <div class="user-chip" onclick="toggleUserMenu(event)">
+                        <span class="user-avatar" id="userAvatar">👤</span>
+                        <span class="user-name" id="userName">مستخدم</span>
+                        <span class="user-caret">▾</span>
+                        <div class="dropdown-menu user-menu" id="userMenu">
+                            <button class="dropdown-item" onclick="openChangePassModal()">🔑 تغيير كلمة المرور</button>
+                            <button class="dropdown-item" onclick="openSyncModal()">☁️ المزامنة السحابية</button>
+                            <button class="dropdown-item danger" onclick="logout()">🚪 تسجيل الخروج</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="add-wrap">
+                    <button class="add-btn" onclick="toggleAddMenu()" aria-label="إضافة">+</button>
+                    <div class="add-menu" id="addMenu">
+                        <button class="add-menu-item" onclick="openAddAreaModal()">🏢 إضافة منطقة</button>
+                        <button class="add-menu-item" onclick="openAddHeadingModal()">📌 إضافة عنوان</button>
+                        <button class="add-menu-item" onclick="openAddTaskModal()">✅ إضافة مهمة</button>
+                        <button class="add-menu-item" onclick="openAddNoteModal()">📝 إضافة ملاحظة</button>
+                        <div class="add-menu-sep"></div>
+                        <button class="add-menu-item" onclick="openMailImportModal()">📧 تحويل بريد إلى مهمة</button>
+                        <button class="add-menu-item" onclick="sendBulkReminder()">🔔 إرسال تذكيرات واتساب</button>
+                        <button class="add-menu-item" onclick="openWaSettingsModal()">⚙️ إعدادات الواتساب</button>
+                        <div class="add-menu-sep"></div>
+                        <button class="add-menu-item" onclick="exportData()">📤 تصدير البيانات</button>
+                        <button class="add-menu-item" onclick="document.getElementById('importFile').click()">📥 استيراد البيانات</button>
+                        <button class="add-menu-item danger" onclick="resetData()">🗑️ إعادة تعيين</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- ===== Nav Tabs ===== -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-view="tasks" onclick="switchView('tasks')">📋 المهام</button>
+            <button class="nav-tab" data-view="dashboard" onclick="switchView('dashboard')">📊 لوحة التحكم</button>
+            <button class="nav-tab" data-view="calendar" onclick="switchView('calendar')">🗓️ التقويم</button>
+            <button class="nav-tab" data-view="notes" onclick="switchView('notes')">📝 الملاحظات</button>
+        </nav>
+
+        <!-- ===== Tasks View ===== -->
+        <section class="view active" id="view-tasks">
+            <div class="main-grid">
+                <aside class="sidebar">
+                    <div class="sidebar-head">
+                        <h3>المناطق</h3>
+                        <span class="area-count" id="areaCount"></span>
+                    </div>
+                    <div id="areaList" class="area-list"></div>
+                    <button class="btn btn-outline btn-block" onclick="openAddAreaModal()">+ إضافة منطقة</button>
+                </aside>
+
+                <div class="tasks-main">
+                    <div class="area-hero" id="areaTitleDisplay">
+                        <span class="area-hero-icon">📋</span>
+                        <h2>اختر منطقة من القائمة</h2>
+                        <p id="areaHeroSummary"></p>
+                    </div>
+                    <div id="taskContent"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== Dashboard View ===== -->
+        <section class="view" id="view-dashboard">
+            <div class="dashboard-wrap">
+                <div class="page-head">
+                    <h2>📊 لوحة التحكم</h2>
+                    <p id="dashDate"></p>
+                </div>
+
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>المنطقة</label>
+                        <select id="filterArea" onchange="updateDashboard()">
+                            <option value="">جميع المناطق</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>المدة الزمنية</label>
+                        <select id="filterTime" onchange="updateDashboard()">
+                            <option value="">الكل</option>
+                            <option value="today">اليوم</option>
+                            <option value="week">هذا الأسبوع</option>
+                            <option value="month">هذا الشهر</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>الحالة</label>
+                        <select id="filterStatus" onchange="updateDashboard()">
+                            <option value="active">المهام المعلّقة فقط</option>
+                            <option value="all">الكل (بما فيها المكتملة)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="stats-strip" id="statsStrip"></div>
+
+                <div class="dashboard-grid" id="priorityDashboard"></div>
+
+                <div class="tasks-by-priority" id="tasksByPriority"></div>
+            </div>
+        </section>
+
+        <!-- ===== Calendar View ===== -->
+        <section class="view" id="view-calendar">
+            <div class="dashboard-wrap">
+                <div class="page-head">
+                    <h2>🗓️ التقويم</h2>
+                    <p>تصنيف المهام حسب تاريخ الاستحقاق</p>
+                </div>
+                <div id="calendarContent"></div>
+            </div>
+        </section>
+
+        <!-- ===== Notes View ===== -->
+        <section class="view" id="view-notes">
+            <div class="dashboard-wrap">
+                <div class="page-head">
+                    <h2>📝 الملاحظات</h2>
+                    <p>سجّل أي نقطة أو فكرة أو تفاصيل مهمة</p>
+                    <button class="btn btn-primary" onclick="openAddNoteModal()">+ ملاحظة جديدة</button>
+                </div>
+                <div id="notesContent"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ===== Toasts ===== -->
+    <div id="toastBox"></div>
+
+    <!-- ===== Add Area Modal ===== -->
+    <div class="modal" id="addAreaModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>🏢 إضافة منطقة جديدة</h3><button class="modal-close" onclick="closeModal('addAreaModal')">×</button></div>
+            <div class="form-group">
+                <label>اسم المنطقة</label>
+                <input type="text" id="areaName" placeholder="مثال: CBFS، المشاريع، الدراسة" onkeydown="if(event.key==='Enter') addArea()">
+            </div>
+            <div class="form-group">
+                <label>الرمز (Emoji - اختياري)</label>
+                <input type="text" id="areaEmoji" placeholder="🏢" maxlength="4">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('addAreaModal')">إلغاء</button>
+                <button class="btn btn-primary" onclick="addArea()">إضافة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Add Heading Modal ===== -->
+    <div class="modal" id="addHeadingModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>📌 إضافة عنوان رئيسي</h3><button class="modal-close" onclick="closeModal('addHeadingModal')">×</button></div>
+            <div class="form-group">
+                <label>المنطقة</label>
+                <select id="headingArea"><option value="">اختر منطقة</option></select>
+            </div>
+            <div class="form-group">
+                <label>اسم العنوان</label>
+                <input type="text" id="headingName" placeholder="مثال: Q3 Audit، POS Software" onkeydown="if(event.key==='Enter') addHeading()">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('addHeadingModal')">إلغاء</button>
+                <button class="btn btn-primary" onclick="addHeading()">إضافة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Add Task Modal ===== -->
+    <div class="modal" id="addTaskModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>✅ إضافة مهمة</h3><button class="modal-close" onclick="closeModal('addTaskModal')">×</button></div>
+            <div class="form-group">
+                <label>المنطقة</label>
+                <select id="taskArea" onchange="updateHeadingOptions()"><option value="">اختر منطقة</option></select>
+            </div>
+            <div class="form-group">
+                <label>العنوان الرئيسي</label>
+                <select id="taskHeading"><option value="">اختر عنوان</option></select>
+            </div>
+            <div class="form-group">
+                <label>اسم المهمة</label>
+                <input type="text" id="taskName" placeholder="أدخل اسم المهمة" onkeydown="if(event.key==='Enter') addTask()">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>الموعد النهائي</label>
+                    <input type="date" id="taskDeadline">
+                </div>
+                <div class="form-group">
+                    <label>الوقت المقدر (ساعات)</label>
+                    <input type="number" id="taskEstimate" placeholder="2" min="0.5" step="0.5">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>الأولوية</label>
+                <select id="taskPriority">
+                    <option value="high">🔴 مهم</option>
+                    <option value="low">🟢 أقل أهمية</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>الملاحظات / التفاصيل</label>
+                <textarea id="taskNotes" rows="3" placeholder="اشرح التفاصيل أو اكتب أي ملاحظات خاصة بهذه المهمة"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('addTaskModal')">إلغاء</button>
+                <button class="btn btn-primary" onclick="addTask()">إضافة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Edit Task Modal ===== -->
+    <div class="modal" id="editTaskModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>✏️ تعديل المهمة</h3><button class="modal-close" onclick="closeModal('editTaskModal')">×</button></div>
+            <div class="form-group">
+                <label>اسم المهمة</label>
+                <input type="text" id="editTaskName">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>الموعد النهائي</label>
+                    <input type="date" id="editTaskDeadline">
+                </div>
+                <div class="form-group">
+                    <label>الوقت المقدر (ساعات)</label>
+                    <input type="number" id="editTaskEstimate" min="0.5" step="0.5">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>الأولوية</label>
+                <select id="editTaskPriority">
+                    <option value="high">🔴 مهم</option>
+                    <option value="low">🟢 أقل أهمية</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>الملاحظات / التفاصيل</label>
+                <textarea id="editTaskNotes" rows="3" placeholder="اشرح التفاصيل أو اكتب أي ملاحظات خاصة بهذه المهمة"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('editTaskModal')">إلغاء</button>
+                <button class="btn btn-primary" onclick="saveEditTask()">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Add Subtask Modal ===== -->
+    <div class="modal" id="addSubtaskModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>➕ إضافة مهمة فرعية</h3><button class="modal-close" onclick="closeModal('addSubtaskModal')">×</button></div>
+            <div class="form-group">
+                <label>اسم المهمة الفرعية</label>
+                <input type="text" id="subtaskName" placeholder="أدخل اسم المهمة الفرعية" onkeydown="if(event.key==='Enter') addSubtask()">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('addSubtaskModal')">إلغاء</button>
+                <button class="btn btn-primary" onclick="addSubtask()">إضافة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Confirm Modal ===== -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header"><h3 id="confirmTitle">تأكيد</h3><button class="modal-close" onclick="closeModal('confirmModal')">×</button></div>
+            <p id="confirmText" class="confirm-text"></p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('confirmModal')">إلغاء</button>
+                <button class="btn btn-danger" id="confirmBtn">تأكيد</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Add Note Modal ===== -->
+    <div class="modal" id="addNoteModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="noteModalTitle">📝 ملاحظة جديدة</h3><button class="modal-close" onclick="closeModal('addNoteModal')">×</button></div>
+            <div class="form-group">
+                <label>عنوان الملاحظة</label>
+                <input type="text" id="noteTitle" placeholder="مثال: فكرة مشروع، رقم هاتف مورد، ملاحظة اجتماع">
+            </div>
+            <div class="form-group">
+                <label>التفاصيل</label>
+                <textarea id="noteContent" rows="7" placeholder="اكتب هنا كل التفاصيل والشرح الذي تريده..."></textarea>
+            </div>
+            <div class="form-group">
+                <label><input type="checkbox" id="notePinned" style="width:auto;accent-color:var(--primary);margin-left:8px;"> مهمة / مثبتة في الأعلى 📌</label>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('addNoteModal')">إلغاء</button>
+                <button class="btn btn-primary" onclick="saveNote()">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Mail Import Modal ===== -->
+    <div class="modal" id="mailImportModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>📧 تحويل بريد إلى مهمة</h3><button class="modal-close" onclick="closeModal('mailImportModal')">×</button></div>
+            <div class="import-info">
+                انسخ محتوى الإيميل (تماماً كما وصلك) وألصقه هنا، وسيتم استخراج العنوان والموعد والأولوية تلقائياً.
+            </div>
+            <div class="form-group">
+                <label>محتوّى الإيميل</label>
+                <textarea id="mailBody" rows="8" oninput="showMailPreview()" placeholder="الصق هنا نص الإيميل...&#10;مثال:&#10;From: ali@company.com&#10;Subject: تجهيز تقرير الربع الرابع&#10;&#10;الرجاء تجهيز التقرير قبل 20 أكتوبر، هذا طلب عاجل"></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>المنطقة الوجهة</label>
+                    <select id="mailArea" onchange="populateMailHeadings(); showMailPreview();"><option value="">اختر منطقة</option></select>
+                </div>
+                <div class="form-group">
+                    <label>العنوان</label>
+                    <select id="mailHeading" onchange="showMailPreview()"><option value="">اختر (أو يُنشأ تلقائياً)</option></select>
+                </div>
+            </div>
+            <div class="import-preview" id="mailPreview"></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('mailImportModal')">إلغاء</button>
+                <button class="btn btn-primary" onclick="importMailAsTask()">تحويل إلى مهمة ✅</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== WhatsApp Settings Modal ===== -->
+    <div class="modal" id="waSettingsModal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header"><h3>🔔 إعدادات الواتساب</h3><button class="modal-close" onclick="closeModal('waSettingsModal')">×</button></div>
+            <div class="form-group">
+                <label>رقم الواتساب (بصيغة دولية بدون + أو أصفار)</label>
+                <input type="text" id="waPhone" placeholder="مثال: 96891234567">
+            </div>
+            <div class="wa-note">
+                💡 التذكيرات تُرسل عبر فتح واتساب برسالة جاهزة — اضغط إرسال لتصل التذكيرات لرقمك. اترك الحقل فارغاً لاختيار الرقم في كل مرة.
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('waSettingsModal')">إلغاء</button>
+                <button class="btn btn-primary" onclick="saveWaSettings()">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importData(event)">
+
+    <!-- ===== Auth Overlay (Login / Register) ===== -->
+    <div class="auth-overlay active" id="authOverlay">
+        <div class="auth-card">
+            <div class="auth-logo">🎯</div>
+            <h1 class="auth-title">حياتي</h1>
+            <p class="auth-subtitle">Life Management Hub</p>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="authTabLoginBtn" onclick="switchAuthTab('login')">تسجيل الدخول</button>
+                <button class="auth-tab" id="authTabRegBtn" onclick="switchAuthTab('register')">حساب جديد</button>
+            </div>
+
+            <form id="loginForm" onsubmit="return handleLogin(event)">
+                <div class="form-group">
+                    <label>اسم المستخدم</label>
+                    <input type="text" id="loginUser" placeholder="admin" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary auth-btn">دخول</button>
+                <p class="auth-msg" id="loginMsg"></p>
+            </form>
+
+            <form id="registerForm" class="hidden" onsubmit="return handleRegister(event)">
+                <div class="form-group">
+                    <label>اسم المستخدم</label>
+                    <input type="text" id="regUser" placeholder="مثال: talal" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <input type="password" id="regPass" placeholder="6 أحرف على الأقل" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label>تأكيد كلمة المرور</label>
+                    <input type="password" id="regPass2" placeholder="أعد كتابة كلمة المرور" autocomplete="new-password">
+                </div>
+                <button type="submit" class="btn btn-primary auth-btn">إنشاء الحساب</button>
+                <p class="auth-msg" id="regMsg"></p>
+            </form>
+
+            <p class="auth-hint">الحساب الافتراضي: <b>admin</b> / <b>admin123</b></p>
+        </div>
+    </div>
+
+    <!-- ===== Change Password Modal ===== -->
+    <div class="modal" id="changePassModal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header"><h3>🔑 تغيير كلمة المرور</h3><button class="modal-close" onclick="closeModal('changePassModal')">×</button></div>
+            <div class="form-group">
+                <label>كلمة المرور الحالية</label>
+                <input type="password" id="chCur" autocomplete="current-password">
+            </div>
+            <div class="form-group">
+                <label>كلمة المرور الجديدة</label>
+                <input type="password" id="chNew" placeholder="6 أحرف على الأقل" autocomplete="new-password">
+            </div>
+            <div class="form-group">
+                <label>تأكيد كلمة المرور الجديدة</label>
+                <input type="password" id="chNew2" autocomplete="new-password">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal('changePassModal')">إلغاء</button>
+                <button class="btn btn-primary" onclick="changePassword()">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Task Notes Modal ===== -->
+    <div class="modal" id="taskNotesModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="tnTitle">📝 ملاحظات المهمة</h3><button class="modal-close" onclick="closeModal('taskNotesModal')">×</button></div>
+            <div class="form-group">
+                <label>تفاصيل المهمة (وصف عام)</label>
+                <textarea id="tnDetails" rows="3" placeholder="وصف عام لهذه المهمة..."></textarea>
+            </div>
+            <div class="tn-list-wrap">
+                <label>ملاحظات العمل لهذه المهمة</label>
+                <div class="tn-list" id="tnList"></div>
+                <div class="form-group" style="margin-top:10px;">
+                    <textarea id="tnNewNote" rows="2" placeholder="سجّل التفاصيل التي تعمل عليها أو أي ملاحظة تخص هذه المهمة..."></textarea>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="saveTnDetails()">💾 حفظ التفاصيل</button>
+                <button class="btn btn-primary" id="tnAddBtn" onclick="addTaskNote()">+ إضافة ملاحظة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Cloud Sync Modal ===== -->
+    <div class="modal" id="syncModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>☁️ المزامنة السحابية</h3><button class="modal-close" onclick="closeModal('syncModal')">×</button></div>
+            <div class="sync-info">
+                <div class="sync-status-row"><span id="syncStatusDot"></span><span id="syncStatusTxt">غير مفعّلة</span></div>
+                <p>المزامنة السحابية تتيح استخدام <b>نفس الحساب</b> على جميع أجهزتك (متحانات، آيباد، جوال) مع مزامنة تلقائية لكل بياناتك.</p>
+                <ol class="sync-steps">
+                    <li>أنشئ حساباً مجانياً على <b>console.firebase.google.com</b> وابدأ مشروعاً جديداً.</li>
+                    <li>أضف تطبيق ويب (رمز <code>&lt;/&gt;</code>) وانسخ إعدادات Firebase.</li>
+                    <li>فعّل تسجيل الدخول: Build → Authentication → Sign-in method → Email/Password.</li>
+                    <li>أنشئ قاعدة بيانات: Build → Firestore Database → إنشاء.</li>
+                    <li>الصق الإعدادات المنسوخة في الحقل أدناه.</li>
+                </ol>
+            </div>
+            <div class="form-group">
+                <label>إعدادات Firebase (firebaseConfig)</label>
+                <textarea id="syncConfigInput" rows="6" placeholder='const firebaseConfig = { apiKey: "...", authDomain: "...", projectId: "...", ... };'></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="disableSync()">⛔ إيقاف المزامنة</button>
+                <button class="btn btn-primary" onclick="saveSyncConfig()">💾 حفظ وتفعيل المزامنة</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
