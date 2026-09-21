@@ -62,29 +62,17 @@ function signup() {
 
 // Login
 function login() {
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-
-    if (!email || !password) {
-        showAuthError('الرجاء ملء البريد وكلمة المرور');
-        return;
-    }
-
-    auth.signInWithEmailAndPassword(email, password)
-        .then(userCredential => {
-            showAuthSuccess('تم تسجيل الدخول بنجاح!');
-            setTimeout(() => {
-                loadAppData();
-            }, 1000);
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    
+    firebase.auth().signInWithEmailAndPassword(email, password)
+        .then(() => {
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'block';
+            loadTasks();
         })
         .catch(error => {
-            if (error.code === 'auth/user-not-found') {
-                showAuthError('البريد الإلكتروني غير موجود');
-            } else if (error.code === 'auth/wrong-password') {
-                showAuthError('كلمة المرور غير صحيحة');
-            } else {
-                showAuthError('خطأ في تسجيل الدخول');
-            }
+            document.getElementById('successMessage').textContent = 'خطأ: ' + error.message;
         });
 }
 
