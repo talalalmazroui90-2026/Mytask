@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حياتي - Life Management Hub</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 🔐 LOGIN SECTION -->
+    <div id="loginSection" class="auth-container active">
+        <div class="auth-box">
+            <h1>حياتي</h1>
+            <p class="subtitle">نظام إدارة الحياة الشامل</p>
+
+            <div id="loginForm">
+                <input type="email" id="email" placeholder="البريد الإلكتروني" required>
+                <input type="password" id="password" placeholder="كلمة المرور" required>
+                <button onclick="login()" class="btn-primary">تسجيل الدخول</button>
+                <p class="toggle-text">ليس لديك حساب؟ <span onclick="toggleAuth()" style="cursor: pointer; color: #007AFF;">إنشاء حساب</span></p>
+            </div>
+
+            <div id="signupForm" style="display: none;">
+                <input type="email" id="signupEmail" placeholder="البريد الإلكتروني" required>
+                <input type="password" id="signupPassword" placeholder="كلمة المرور (6+ أحرف)" required>
+                <input type="password" id="signupPassword2" placeholder="تأكيد كلمة المرور" required>
+                <button onclick="signup()" class="btn-primary">إنشاء حساب</button>
+                <p class="toggle-text">لديك حساب بالفعل؟ <span onclick="toggleAuth()" style="cursor: pointer; color: #007AFF;">تسجيل الدخول</span></p>
+            </div>
+
+            <div id="authError" class="error-message" style="display: none;"></div>
+            <div id="authSuccess" class="success-message" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- 🏠 MAIN APP SECTION -->
+    <div id="appSection" class="app-container" style="display: none;">
+        <!-- Header -->
+        <header class="header">
+            <h1>حياتي</h1>
+            <div class="header-actions">
+                <span id="userEmail" class="user-info"></span>
+                <button onclick="logout()" class="btn-logout">تسجيل الخروج</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="container">
+            <!-- Sidebar Navigation -->
+            <nav class="sidebar">
+                <ul>
+                    <li><a href="#" onclick="showSection('tasks')" class="nav-link active">📋 المهام</a></li>
+                    <li><a href="#" onclick="showSection('goals')" class="nav-link">🎯 الأهداف</a></li>
+                    <li><a href="#" onclick="showSection('habits')" class="nav-link">✅ العادات</a></li>
+                    <li><a href="#" onclick="showSection('notes')" class="nav-link">📝 الملاحظات</a></li>
+                </ul>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <!-- Tasks Section -->
+                <section id="tasks-section" class="section active">
+                    <h2>المهام</h2>
+                    <div class="input-group">
+                        <input type="text" id="taskInput" placeholder="أضف مهمة جديدة..." onkeypress="if(event.key==='Enter') addTask()">
+                        <button onclick="addTask()" class="btn-primary">➕</button>
+                    </div>
+                    <ul id="tasksList" class="list"></ul>
+                </section>
+
+                <!-- Goals Section -->
+                <section id="goals-section" class="section" style="display: none;">
+                    <h2>الأهداف</h2>
+                    <div class="input-group">
+                        <input type="text" id="goalInput" placeholder="أضف هدف جديد..." onkeypress="if(event.key==='Enter') addGoal()">
+                        <button onclick="addGoal()" class="btn-primary">➕</button>
+                    </div>
+                    <ul id="goalsList" class="list"></ul>
+                </section>
+
+                <!-- Habits Section -->
+                <section id="habits-section" class="section" style="display: none;">
+                    <h2>العادات</h2>
+                    <div class="input-group">
+                        <input type="text" id="habitInput" placeholder="أضف عادة جديدة..." onkeypress="if(event.key==='Enter') addHabit()">
+                        <button onclick="addHabit()" class="btn-primary">➕</button>
+                    </div>
+                    <ul id="habitsList" class="list"></ul>
+                </section>
+
+                <!-- Notes Section -->
+                <section id="notes-section" class="section" style="display: none;">
+                    <h2>الملاحظات</h2>
+                    <div class="input-group">
+                        <textarea id="noteInput" placeholder="أضف ملاحظة جديدة..."></textarea>
+                        <button onclick="addNote()" class="btn-primary">➕</button>
+                    </div>
+                    <ul id="notesList" class="list"></ul>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Firebase SDK from CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
+
+    <!-- App Script -->
+    <script src="app.js"></script>
+</body>
+</html>
